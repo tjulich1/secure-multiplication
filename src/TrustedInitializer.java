@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
-*
+* Trusted Initializer is used to generate and distribute random shares of U,
+* V, and W for Alice and Bob to use in their secure computations. After
+* generation and distribution of random numbers, the trusted initializer is
+* closed.
 */
 public class TrustedInitializer
 {
 
-  private int prime = 17321;
+  private static final int PRIME = 17321;
   private int u;
   private int v;
   private int w;
@@ -27,41 +30,24 @@ public class TrustedInitializer
   private PrintWriter aliceOut;
   private PrintWriter bobOut;
 
-  /**
-  * Constructor.
-  */
-  public TrustedInitializer()
-  {
-
-  }
-
-  /**
-  *
-  */
   public void generateTriple()
   {
-    u = (int) (Math.random() * prime);
-    v = (int) (Math.random() * prime);
-    w = Math.floorMod(u * v, prime);
+    u = (int) (Math.random() * PRIME);
+    v = (int) (Math.random() * PRIME);
+    w = Math.floorMod(u * v, PRIME);
   }
 
-  /**
-  *
-  */
   public void generateShares()
   {
-    aliceU = (int) (Math.random() * prime);
-    aliceV = (int) (Math.random() * prime);
-    aliceW = (int) (Math.random() * prime);
+    aliceU = (int) (Math.random() * PRIME);
+    aliceV = (int) (Math.random() * PRIME);
+    aliceW = (int) (Math.random() * PRIME);
 
-    bobU = Math.floorMod(u - aliceU, prime);
-    bobV = Math.floorMod(v - aliceV, prime);
-    bobW = Math.floorMod(w - aliceW, prime);
+    bobU = Math.floorMod(u - aliceU, PRIME);
+    bobV = Math.floorMod(v - aliceV, PRIME);
+    bobW = Math.floorMod(w - aliceW, PRIME);
   }
 
-  /**
-  *
-  */
   public void sendShares()
   {
     aliceOut.println(Integer.toString(aliceU));
@@ -73,9 +59,6 @@ public class TrustedInitializer
     bobOut.println(Integer.toString(bobW));
   }
 
-  /**
-  *
-  */
   public void start(final int port)
   {
     try
@@ -92,9 +75,6 @@ public class TrustedInitializer
     }
   }
 
-  /**
-  *
-  */
   public void close()
   {
     try
@@ -110,9 +90,6 @@ public class TrustedInitializer
     }
   }
 
-  /**
-  *
-  */
   public static void main(String[] args)
   {
     TrustedInitializer ti = new TrustedInitializer();
@@ -122,5 +99,4 @@ public class TrustedInitializer
     ti.sendShares();
     ti.close();
   }
-
 }

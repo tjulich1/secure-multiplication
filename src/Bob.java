@@ -13,6 +13,8 @@ import java.lang.InterruptedException;
 */
 public class Bob
 {
+  private static final int PRIME = 17321;
+  private static final int BOB_NUMBER = 10;
 
   private int number;
   private ServerSocket serverSocket;
@@ -36,8 +38,6 @@ public class Bob
 
   private int productShare;
 
-  private int prime = 17321;
-
   /**
   * Constructor.
   *
@@ -48,146 +48,85 @@ public class Bob
     this.number = number;
   }
 
-  public void readSharesOfTriple()
+  public void readSharesOfTriple() throws IOException
   {
-    try
-    {
       BufferedReader in = new BufferedReader(new InputStreamReader(tiSocket.getInputStream()));
       bobU = Integer.parseInt(in.readLine());
       bobV = Integer.parseInt(in.readLine());
       bobW = Integer.parseInt(in.readLine());
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
   }
 
   public void createShares()
   {
-    bobY = (int) (Math.random() * prime);
-    aliceY = Math.floorMod(number - bobY, prime);
+    bobY = (int) (Math.random() * PRIME);
+    aliceY = Math.floorMod(number - bobY, PRIME);
     System.out.println("BOB: Alice share of y = " + aliceY);
     out.println(Integer.toString(aliceY));
   }
 
-  public void readAliceShare()
+  public void readAliceShare() throws IOException
   {
-    try
-    {
-      bobX = Integer.parseInt(in.readLine());
-      System.out.println("BOB: Bob share of x = " + bobX);
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    bobX = Integer.parseInt(in.readLine());
   }
 
-  public void computeDandE()
+  public void computeDandE() throws IOException
   {
-    final int d0 = Math.floorMod(bobX - bobU, prime);
-    final int e0 = Math.floorMod(bobY - bobV, prime);
+    final int d0 = Math.floorMod(bobX - bobU, PRIME);
+    final int e0 = Math.floorMod(bobY - bobV, PRIME);
     out.println(Integer.toString(d0));
     out.println(Integer.toString(e0));
-    try
-    {
-      final int d1 = Integer.parseInt(in.readLine());
-      final int e1 = Integer.parseInt(in.readLine());
-      d = Math.floorMod(d0 + d1, prime);
-      e = Math.floorMod(e0 + e1, prime);
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+
+    final int d1 = Integer.parseInt(in.readLine());
+    final int e1 = Integer.parseInt(in.readLine());
+    d = Math.floorMod(d0 + d1, PRIME);
+    e = Math.floorMod(e0 + e1, PRIME);
   }
 
   public void computeFinalShare()
   {
-    productShare = Math.floorMod(bobW + d*bobV + bobU*e, prime);
+    productShare = Math.floorMod(bobW + d*bobV + bobU*e, PRIME);
     out.println(Integer.toString(productShare));
   }
 
-  public void readFinalShare()
+  public void readFinalShare() throws IOException
   {
-    try
-    {
-      final int otherShare = Integer.parseInt(in.readLine());
-      final int finalProduct = Math.floorMod(otherShare + productShare, prime);
-      System.out.println("Final product: " + finalProduct);
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    final int otherShare = Integer.parseInt(in.readLine());
+    final int finalProduct = Math.floorMod(otherShare + productShare, PRIME);
+    System.out.println("Final product: " + finalProduct);
   }
 
   /////////////////////
   // Network methods //
   /////////////////////
 
-
-  public void open(final int port)
+  public void open(final int port) throws IOException
   {
-    try
-    {
-      serverSocket = new ServerSocket(port);
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    serverSocket = new ServerSocket(port);
   }
 
-  public void close()
+  public void close() throws IOException
   {
-    try
-    {
-      serverSocket.close();
-      aliceSocket.close();
-      bobSocket.close();
-      in.close();
-      out.close();
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    serverSocket.close();
+    aliceSocket.close();
+    bobSocket.close();
+    in.close();
+    out.close();
   }
 
-  /**
-  *
-  */
-  public void connectToTI()
+  public void connectToTI(final String IP, final int port) throws IOException
   {
-    try
-    {
-      tiSocket = new Socket("127.0.0.1", 6668);
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    tiSocket = new Socket(IP, port);
   }
 
-  public void connectToAlice()
+  public void connectToAlice(final String IP, final int port) throws IOException
   {
-    try
-    {
-      bobSocket = new Socket("127.0.0.1", 6666);
-      in = new BufferedReader(new InputStreamReader(bobSocket.getInputStream()));
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    bobSocket = new Socket(IP, port);
+    in = new BufferedReader(new InputStreamReader(bobSocket.getInputStream()));
   }
 
-  /**
-  *
-  */
-  public void closeTI()
+  public void closeTI() throws IOException
   {
-    try
-    {
-      tiSocket.close();
-    } catch (final IOException e)
-    {
-      e.printStackTrace();
-    }
+    tiSocket.close();
   }
 
   public void waitForAlice()
@@ -196,34 +135,38 @@ public class Bob
     thread.start();
   }
 
-  /**
-  *
-  */
-  public static void main(String[] args)
+  public static void main(String[] args) throws IOException
   {
-    final Bob bob = new Bob(2);
-    bob.connectToTI();
-    bob.readSharesOfTriple();
-    bob.closeTI();
-    bob.open(6667);
-    bob.waitForAlice();
-    bob.connectToAlice();
-
+    final Bob bob = new Bob(BOB_NUMBER);
     try
     {
-      Thread.sleep(2000);
-    } catch (final InterruptedException e)
+      bob.connectToTI("127.0.0.1", 6668);
+      bob.readSharesOfTriple();
+      bob.closeTI();
+      bob.open(6667);
+      bob.waitForAlice();
+      bob.connectToAlice("127.0.0.1", 6666);
+      try
+      {
+        Thread.sleep(2000);
+      } catch (final InterruptedException e)
+      {
+        e.printStackTrace();
+      }
+      bob.createShares();
+      bob.readAliceShare();
+      bob.computeDandE();
+      bob.computeFinalShare();
+      bob.readFinalShare();
+    }
+    catch (final IOException e)
     {
       e.printStackTrace();
     }
-
-    bob.createShares();
-    bob.readAliceShare();
-    bob.computeDandE();
-    bob.computeFinalShare();
-    bob.readFinalShare();
-
-    bob.close();
+    finally
+    {
+      bob.close();
+    }
   }
 
   private class WaitThread implements Runnable
@@ -234,7 +177,6 @@ public class Bob
       try
       {
         aliceSocket = serverSocket.accept();
-        System.out.println("BOB: Connected to alice");
         out = new PrintWriter(aliceSocket.getOutputStream(), true);
       } catch (final IOException e)
       {
@@ -242,5 +184,4 @@ public class Bob
       }
     }
   }
-
 }
