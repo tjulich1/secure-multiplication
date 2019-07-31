@@ -8,6 +8,9 @@ import java.io.PrintWriter;
 * V, and W for Alice and Bob to use in their secure computations. After
 * generation and distribution of random numbers, the trusted initializer is
 * closed.
+*
+* @author Trent Julich
+* @version 30 July 2019
 */
 public class TrustedInitializer
 {

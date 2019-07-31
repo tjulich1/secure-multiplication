@@ -8,7 +8,7 @@ import java.lang.Thread;
 
 /**
 * @author Trent Julich
-* @version 20 July 2019
+* @version 30 July 2019
 */
 public class Alice
 {
